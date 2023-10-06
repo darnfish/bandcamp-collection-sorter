@@ -55,9 +55,9 @@ Once all these fields are filled out in `.env`, run `node .` inside the Terminal
 [LAST.FM] Got 1000 items, 1000 new
 [LAST.FM] Got 2000 items, 1000 new
 ...
-[MATCHENGINE] Matched 183 albums, 45 albums could not be matched
+[MATCHENGINE] Matched 216 albums, 32 albums could not be matched, saved to unmatched.txt
 [SORTENGINE] Matched items sorted by play count, unmatched items sorted by alphabetical order of artist name
-[BANDCAMP] Sorted 228 albums in your collection
+[BANDCAMP] Sorted 248 albums in your collection
 ```
 
 > **NOTE**: Your previous Bandcamp collection order will be automatically overwritten upon running `node .`. The last scraped Bandcamp collection status will be written to `collection_items.json`, but running the script for a second time will overwrite this once and for all. If you want to have a copy of your previous collection, make sure to back up this file once it is first created.

@@ -17,6 +17,35 @@ const lfm = axios.create({
 
 const cache = process.env.CACHE === '1'
 
+function createHash(item) {
+	let string
+
+	string = [
+		item.title,
+		// Sometimes Last.fm only credits the first artist while Bandcamp does not - e.g. 100 gecs, Dylan Brady & Laura Les - 1000 gecs
+		item.artist.split(', ')[0]
+	]
+
+	string = string.map(part => {
+		part = part.replaceAll(' ', '')
+		part = part.toLowerCase()
+
+		// Some albums that were purchased as a vinyl contain the word "vinyl" in the title (e.g. Machine Girl - WLFGRL vinyl)
+		part = part.replace('vinyl', '')
+
+		// Sometimes albums with (ft. artist) are like this in Bandcamp / Last.fm and not in the other
+		// We first check that it does not begin with a ( since some albums are formatted this way (e.g. nu - (1))
+		if(part.at(0) !== '(')
+			part = part.split('(')[0]
+
+		return part
+	})
+
+	string = string.join('')
+
+	return crypto.createHash('sha256').update(string).digest('hex')
+}
+
 function get32BitUnixTimestamp() {
 	return Math.round(Date.now() / 1000)
 }
@@ -46,7 +75,7 @@ async function fetchCollectionItems(bcDetails) {
 
 		console.log(`[BANDCAMP] Got ${items.length} items, ${currentItems.length} new`)
 
-		if (!currentLastToken)
+		if (currentItems.length < 20 || !currentLastToken)
 			break
 
 		lastToken = currentLastToken
@@ -83,10 +112,6 @@ async function fetchTopAlbums() {
 	return albums
 }
 
-function createHash(item) {
-	return crypto.createHash('sha256').update([item.title, item.artist].map(part => part.replaceAll(' ', '').toLowerCase()).join('')).digest('hex')
-}
-
 function matchAndSortAlbums(_lfmAlbums, _bcItems) {
 	let lfmAlbums = _lfmAlbums.map(album => ({
 		title: album.name,
@@ -119,7 +144,9 @@ function matchAndSortAlbums(_lfmAlbums, _bcItems) {
 	
 	const unmatchedItems = bcItems.filter(item => !matchedItemHashes.includes(item.hash))
 
-	console.log(`[MATCHENGINE] Matched ${matchedItems.length} albums, ${unmatchedItems.length} albums could not be matched`)
+	console.log(`[MATCHENGINE] Matched ${matchedItems.length} albums, ${unmatchedItems.length} albums could not be matched, saved to unmatched.txt`)
+
+	fs.writeFileSync('./unmatched.txt', unmatchedItems.map(item => [item.artist, item.title].join(' - ')).join('\n'), 'utf-8')
 
 	return {
 		matchedItems,
