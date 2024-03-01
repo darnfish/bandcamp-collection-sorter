@@ -3,6 +3,7 @@ require('dotenv').config()
 const fs = require('fs')
 const axios = require('axios').default
 const crypto = require('crypto')
+const CronJob = require('cron').CronJob
 
 const bc = axios.create({
 	baseURL: 'https://bandcamp.com',
@@ -207,4 +208,13 @@ async function main() {
 	await updateCollectionOrder(details, itemIds)
 }
 
-main()
+if(process.env.CRON) {
+	const job = new CronJob(
+		process.env.CRON,
+		main,
+		null,
+		true,
+		process.env.TZ || 'America/New_York'
+	)
+} else
+	main()
