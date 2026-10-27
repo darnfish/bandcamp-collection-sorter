@@ -1,0 +1,7 @@
+.git
+.github
+node_modules
+.env
+*.json
+!package.json
+unmatched.txt
