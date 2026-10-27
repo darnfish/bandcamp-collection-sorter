@@ -8,6 +8,9 @@ name: Docker
 on:
   push:
     branches: [ "main" ]
+  # Build-only check: login, push and signing are skipped for pull requests below.
+  pull_request:
+    branches: [ "main" ]
   workflow_dispatch:
 
 env:
